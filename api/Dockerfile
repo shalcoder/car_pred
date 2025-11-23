@@ -8,10 +8,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends build-essential
 
 WORKDIR /app
 
-COPY requirements.txt /app/requirements.txt
+# Copy requirements from api folder
+COPY api/requirements.txt /app/requirements.txt
 RUN pip install --upgrade pip
 RUN pip install -r /app/requirements.txt
 
-COPY . /app
+# Copy src folder for imports
+COPY src /app/src
+
+# Copy api folder
+COPY api /app/api
 
 CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
