@@ -76,7 +76,7 @@ def predict_car(payload: CarInput):
 
         return {
             "predicted_price": float(pred),
-            "model_used": MODEL_PATH
+            "model_used": "best_tuned_model.joblib"
         }
 
     except Exception as e:

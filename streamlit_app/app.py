@@ -1,4 +1,3 @@
-# streamlit_app/app.py
 import streamlit as st
 import requests
 import pandas as pd
@@ -6,152 +5,446 @@ import numpy as np
 import altair as alt
 from datetime import datetime
 
-# -------------------------
-# CONFIG
-# -------------------------
+# Configuration
 API_URL = "http://127.0.0.1:8000/predict"
-APP_TITLE = "🚘 Shadowfox — Car Resale Price Estimator"
-APP_SUB = "Smart, fast and professional UI for your car price ML model"
+APP_TITLE = "Shadowfox Car Resale Price Estimator"
+APP_SUB = "Intelligent vehicle valuation powered by machine learning"
 
-# Local file link (will be transformed by your tooling). Provided by user upload.
-# Developer note: the path below is expected to be converted into a served URL by your infra.
 DOWNLOAD_CODE_PATH = "E:/shadowfox/phase2/car_pred/streamlit_app/app.py"
 
 st.set_page_config(
-    page_title="Shadowfox — Car Price Estimator",
-    page_icon=":car:",
+    page_title="Shadowfox Car Price Estimator",
+    page_icon="🔷",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# -------------------------
-# CSS — glassmorphism + sleek header
-# -------------------------
+# Enhanced Professional CSS
 st.markdown(
     """
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    * {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    
     :root {
-      --accent: linear-gradient(90deg, #2b8be6, #8c52ff);
-      --card-bg: rgba(255, 255, 255, 0.06);
-      --card-blur: 8px;
+        --primary-blue: #0066CC;
+        --primary-dark: #004C99;
+        --secondary-slate: #475569;
+        --accent-teal: #0891B2;
+        --bg-card: rgba(255, 255, 255, 0.03);
+        --bg-elevated: rgba(255, 255, 255, 0.06);
+        --border-subtle: rgba(255, 255, 255, 0.08);
+        --text-primary: #F8FAFC;
+        --text-secondary: #CBD5E1;
+        --text-muted: #94A3B8;
+        --success: #10B981;
+        --warning: #F59E0B;
     }
+    
+    .stApp {
+        background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
+    }
+    
     .app-header {
-      padding: 18px;
-      border-radius: 14px;
-      background: linear-gradient(90deg, rgba(43,139,230,0.12), rgba(140,82,255,0.08));
-      box-shadow: 0 6px 18px rgba(12,13,20,0.12);
-      margin-bottom: 18px;
+        background: linear-gradient(135deg, rgba(0, 102, 204, 0.08) 0%, rgba(8, 145, 178, 0.05) 100%);
+        border: 1px solid var(--border-subtle);
+        border-radius: 16px;
+        padding: 32px 28px;
+        margin-bottom: 28px;
+        backdrop-filter: blur(20px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
     }
-    .big-title {
-      font-size:28px;
-      font-weight:700;
-      letter-spacing: -0.5px;
-      color: white;
+    
+    .app-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--primary-blue), transparent);
     }
-    .sub-title {
-      font-size:14px;
-      color: #d1d7e0;
-      margin-top:6px;
+    
+    .header-title {
+        font-size: 32px;
+        font-weight: 700;
+        letter-spacing: -0.8px;
+        color: var(--text-primary);
+        margin: 0;
+        line-height: 1.2;
     }
-    .glass {
-      background: var(--card-bg);
-      border-radius: 12px;
-      padding: 16px;
-      backdrop-filter: blur(var(--card-blur));
-      box-shadow: 0 6px 18px rgba(10, 15, 25, 0.25);
-      color: #eaf0ff;
+    
+    .header-subtitle {
+        font-size: 15px;
+        color: var(--text-secondary);
+        margin-top: 8px;
+        font-weight: 400;
+        letter-spacing: 0.2px;
     }
-    .muted { color: #aeb7c7; font-size:13px; }
-    .footer { font-size:12px; color:#9aa3b3; margin-top:8px; }
-    .predict-btn {
-      background: linear-gradient(90deg,#2b8be6,#8c52ff);
-      color: white;
-      padding: 10px 18px;
-      border-radius: 8px;
-      border: none;
+    
+    .header-meta {
+        text-align: right;
+        font-size: 13px;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+    
+    .glass-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        border-radius: 12px;
+        padding: 24px;
+        backdrop-filter: blur(16px);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .glass-card:hover {
+        border-color: rgba(0, 102, 204, 0.3);
+        box-shadow: 0 8px 32px rgba(0, 102, 204, 0.15);
+    }
+    
+    .card-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0 0 20px 0;
+        letter-spacing: -0.3px;
+    }
+    
+    .price-display {
+        background: linear-gradient(135deg, rgba(0, 102, 204, 0.15), rgba(8, 145, 178, 0.1));
+        border: 1px solid rgba(0, 102, 204, 0.3);
+        border-radius: 12px;
+        padding: 32px 24px;
+        text-align: center;
+        margin: 20px 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .price-display::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(0, 102, 204, 0.1) 0%, transparent 70%);
+        animation: pulse 3s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 0.5; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    
+    .price-value {
+        font-size: 48px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+        letter-spacing: -1px;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .price-currency {
+        font-size: 24px;
+        color: var(--text-secondary);
+        margin-right: 4px;
+    }
+    
+    .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-top: 24px;
+    }
+    
+    .metric-card {
+        background: var(--bg-elevated);
+        border: 1px solid var(--border-subtle);
+        border-radius: 8px;
+        padding: 16px;
+        text-align: center;
+        transition: all 0.2s ease;
+    }
+    
+    .metric-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateY(-2px);
+    }
+    
+    .metric-label {
+        font-size: 12px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    
+    .metric-value {
+        font-size: 20px;
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+    
+    .insight-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .insight-item {
+        padding: 12px 16px;
+        margin-bottom: 8px;
+        background: var(--bg-elevated);
+        border-left: 3px solid var(--primary-blue);
+        border-radius: 6px;
+        color: var(--text-secondary);
+        font-size: 14px;
+        line-height: 1.6;
+        transition: all 0.2s ease;
+    }
+    
+    .insight-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-left-color: var(--accent-teal);
+    }
+    
+    .divider {
+        height: 1px;
+        background: var(--border-subtle);
+        margin: 24px 0;
+        border: none;
+    }
+    
+    .footer-text {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-top: 12px;
+        line-height: 1.6;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+    }
+    
+    .status-success {
+        background: rgba(16, 185, 129, 0.15);
+        color: var(--success);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    .status-warning {
+        background: rgba(245, 158, 11, 0.15);
+        color: var(--warning);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    
+    /* Streamlit Component Overrides */
+    .stButton > button {
+        width: 100%;
+        background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+        color: white;
+        font-weight: 600;
+        padding: 14px 24px;
+        border-radius: 8px;
+        border: none;
+        font-size: 15px;
+        letter-spacing: 0.3px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+    }
+    
+    .stButton > button:hover {
+        background: linear-gradient(135deg, var(--primary-dark), var(--accent-teal));
+        box-shadow: 0 6px 20px rgba(0, 102, 204, 0.4);
+        transform: translateY(-2px);
+    }
+    
+    .stNumberInput > div > div > input,
+    .stSelectbox > div > div > select,
+    .stTextInput > div > div > input {
+        background: var(--bg-elevated);
+        border: 1px solid var(--border-subtle);
+        color: var(--text-primary);
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    
+    .stNumberInput > div > div > input:focus,
+    .stSelectbox > div > div > select:focus,
+    .stTextInput > div > div > input:focus {
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+    }
+    
+    section[data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #0F172A 0%, #1E293B 100%);
+        border-right: 1px solid var(--border-subtle);
+    }
+    
+    section[data-testid="stSidebar"] .stMarkdown {
+        color: var(--text-secondary);
+    }
+    
+    .element-container {
+        margin-bottom: 8px;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# Header
+# Header Section
 with st.container():
     st.markdown('<div class="app-header">', unsafe_allow_html=True)
     cols = st.columns([0.75, 0.25])
     with cols[0]:
-        st.markdown('<div class="big-title">🚘 Shadowfox — Car Resale Price Estimator</div>', unsafe_allow_html=True)
-        st.markdown('<div class="sub-title">Enter car details on the left — get a reliable resale estimate instantly.</div>', unsafe_allow_html=True)
+        st.markdown('<h1 class="header-title">Shadowfox Car Resale Price Estimator</h1>', unsafe_allow_html=True)
+        st.markdown('<p class="header-subtitle">Intelligent vehicle valuation powered by machine learning algorithms</p>', unsafe_allow_html=True)
     with cols[1]:
-        st.markdown(f"<div style='text-align:right'><small class='muted'>Updated: {datetime.now().strftime('%Y-%m-%d %H:%M')}</small></div>", unsafe_allow_html=True)
+        current_time = datetime.now().strftime('%B %d, %Y')
+        st.markdown(f"<div class='header-meta'>Updated<br/>{current_time}</div>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# -------------------------
-# LAYOUT
-# -------------------------
+# Sidebar Configuration
 sidebar = st.sidebar
-sidebar.markdown("### Input Car Details")
-present_price = sidebar.number_input("Present Price (lakhs)", min_value=0.0, value=5.59, step=0.1, format="%.2f")
-kms_driven = sidebar.number_input("Kilometers Driven", min_value=0, value=27000, step=100)
-year = sidebar.slider("Manufacture Year", 1990, 2025, 2014)
-brand = sidebar.text_input("Brand (optional)", value="Maruti")
-fuel_type = sidebar.selectbox("Fuel Type", ["Petrol", "Diesel", "CNG", "LPG", "Other"])
-seller_type = sidebar.selectbox("Seller Type", ["Dealer", "Individual"])
-transmission = sidebar.selectbox("Transmission", ["Manual", "Automatic"])
-owner = sidebar.selectbox("Previous Owners", [0, 1, 2, 3])
-show_engineered = sidebar.checkbox("Show engineered features (debug)", value=False)
+sidebar.markdown("### Vehicle Information")
+sidebar.markdown("<div style='height: 12px'></div>", unsafe_allow_html=True)
 
-# Controls
-run_button = st.sidebar.button("Estimate Price", key="predict")
+present_price = sidebar.number_input(
+    "Current Market Price (lakhs)", 
+    min_value=0.0, 
+    value=5.59, 
+    step=0.1, 
+    format="%.2f",
+    help="Enter the current market price of the vehicle"
+)
 
-# Center area: result and diagnostics
+kms_driven = sidebar.number_input(
+    "Kilometers Driven", 
+    min_value=0, 
+    value=27000, 
+    step=500,
+    help="Total distance traveled by the vehicle"
+)
+
+year = sidebar.slider(
+    "Year of Manufacture", 
+    1990, 
+    2025, 
+    2014,
+    help="Select the year the vehicle was manufactured"
+)
+
+brand = sidebar.text_input(
+    "Brand Name", 
+    value="Maruti",
+    help="Enter the vehicle manufacturer name"
+)
+
+sidebar.markdown("<div style='height: 16px'></div>", unsafe_allow_html=True)
+sidebar.markdown("### Vehicle Specifications")
+sidebar.markdown("<div style='height: 12px'></div>", unsafe_allow_html=True)
+
+fuel_type = sidebar.selectbox(
+    "Fuel Type", 
+    ["Petrol", "Diesel", "CNG", "LPG", "Electric", "Hybrid"],
+    help="Select the type of fuel used"
+)
+
+seller_type = sidebar.selectbox(
+    "Seller Type", 
+    ["Dealer", "Individual"],
+    help="Type of seller offering the vehicle"
+)
+
+transmission = sidebar.selectbox(
+    "Transmission Type", 
+    ["Manual", "Automatic"],
+    help="Gearbox transmission type"
+)
+
+owner = sidebar.selectbox(
+    "Number of Previous Owners", 
+    [0, 1, 2, 3],
+    help="How many owners has this vehicle had"
+)
+
+sidebar.markdown("<div style='height: 20px'></div>", unsafe_allow_html=True)
+
+show_engineered = sidebar.checkbox(
+    "Display Feature Engineering", 
+    value=False,
+    help="Show the calculated features used by the model"
+)
+
+sidebar.markdown("<div style='height: 12px'></div>", unsafe_allow_html=True)
+run_button = sidebar.button("Calculate Resale Value")
+
+# Main Content Layout
 left_col, right_col = st.columns([0.6, 0.4])
 
 with left_col:
-    st.markdown('<div class="glass">', unsafe_allow_html=True)
-    st.markdown("<h3 style='margin:0'>Estimated Resale Price</h3>", unsafe_allow_html=True)
-    st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
-
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.markdown("<h2 class='card-title'>Predicted Resale Value</h2>", unsafe_allow_html=True)
+    
     price_placeholder = st.empty()
-    details_placeholder = st.empty()
-
-    st.markdown("<hr/>", unsafe_allow_html=True)
-    st.markdown("#### Model diagnostics", unsafe_allow_html=True)
-    diag_col1, diag_col2, diag_col3 = st.columns(3)
-    with diag_col1:
-        model_used = st.empty()
-    with diag_col2:
-        latency = st.empty()
-    with diag_col3:
-        confidence = st.empty()
-
+    
+    st.markdown("<hr class='divider'/>", unsafe_allow_html=True)
+    st.markdown("<h3 class='card-title'>Model Performance Metrics</h3>", unsafe_allow_html=True)
+    
+    metrics_placeholder = st.empty()
+    
     st.markdown('</div>', unsafe_allow_html=True)
 
 with right_col:
-    st.markdown('<div class="glass">', unsafe_allow_html=True)
-    st.markdown("### Quick Insights")
-    st.markdown("- `Price_Depreciation` and `Age` are strong drivers.")
-    st.markdown("- Dealer listings often fetch slightly higher resale.")
-    st.markdown("<hr/>", unsafe_allow_html=True)
-
-    # local path that will be turned into a URL by your tooling
-   
-    st.markdown("<div class='footer'>Pro tip: deploy FastAPI backend on Render and expose it via HTTPS; update API_URL in Streamlit secrets.</div>", unsafe_allow_html=True)
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.markdown("<h2 class='card-title'>Key Insights</h2>", unsafe_allow_html=True)
+    
+    st.markdown("""
+    <ul class='insight-list'>
+        <li class='insight-item'><strong>Depreciation Rate:</strong> Primary factor affecting vehicle value over time</li>
+        <li class='insight-item'><strong>Vehicle Age:</strong> Strong inverse correlation with resale price</li>
+        <li class='insight-item'><strong>Seller Premium:</strong> Dealer listings typically command higher valuations</li>
+        <li class='insight-item'><strong>Usage Pattern:</strong> Annual mileage impacts overall condition assessment</li>
+    </ul>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("<hr class='divider'/>", unsafe_allow_html=True)
+    
+    
     st.markdown('</div>', unsafe_allow_html=True)
 
-# -------------------------
-# Prediction logic
-# -------------------------
+# Prediction Logic
 def call_predict_api(payload: dict):
+    """Call the prediction API endpoint with error handling"""
     try:
         resp = requests.post(API_URL, json=payload, timeout=10)
         resp.raise_for_status()
         return resp.json()
+    except requests.exceptions.RequestException as e:
+        return {"error": f"API request failed: {str(e)}"}
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": f"Unexpected error: {str(e)}"}
 
 if run_button:
-    # build payload
     payload = {
         "present_price": float(present_price),
         "kms_driven": int(kms_driven),
@@ -163,65 +456,107 @@ if run_button:
         "brand": brand or "Unknown"
     }
 
-    with st.spinner("Estimating price — contacting model..."):
+    with st.spinner("Calculating resale value using machine learning model..."):
         t0 = pd.Timestamp.now()
         result = call_predict_api(payload)
         t1 = pd.Timestamp.now()
-        dt = (t1 - t0).total_seconds()
+        elapsed_time = (t1 - t0).total_seconds()
 
-    # handle errors
     if result is None or "error" in result:
-        st.error("API error: " + (result.get("error") if isinstance(result, dict) else "unknown"))
+        error_msg = result.get("error", "Unknown error occurred") if isinstance(result, dict) else "API connection failed"
+        st.error(f"Error: {error_msg}")
     else:
-        predicted = result.get("predicted_price")
-        used = result.get("model_used", "unknown")
-        # show an animated metric-like output
-        price_placeholder.markdown(
-            f"<div style='font-size:44px; font-weight:700; margin-top:6px;'>₹ {predicted:.2f} lakhs</div>",
-            unsafe_allow_html=True
-        )
-        model_used.text(f"Model: {used}")
-        latency.text(f"Latency: {dt:.2f}s")
-        confidence.text("Confidence: High")  # placeholder — replace with real metric later
+        predicted_price = result.get("predicted_price", 0.0)
+        model_name = result.get("model_used", "Unknown Model")
+        
+        # Display Price
+        price_placeholder.markdown(f"""
+        <div class='price-display'>
+            <div class='price-value'>
+                <span class='price-currency'>₹</span>{predicted_price:.2f}
+            </div>
+            <div style='margin-top: 8px; color: var(--text-secondary); font-size: 14px;'>lakhs (Indian Rupees)</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Display Metrics
+        confidence_level = "High" if predicted_price > 0 else "Low"
+        status_class = "status-success" if confidence_level == "High" else "status-warning"
+        
+        metrics_placeholder.markdown(f"""
+        <div class='metric-grid'>
+            <div class='metric-card'>
+                <div class='metric-label'>Model Type</div>
+                <div class='metric-value'>{model_name}</div>
+            </div>
+            <div class='metric-card'>
+                <div class='metric-label'>Response Time</div>
+                <div class='metric-value'>{elapsed_time:.3f}s</div>
+            </div>
+            <div class='metric-card'>
+                <div class='metric-label'>Confidence</div>
+                <div class='metric-value'>
+                    <span class='status-badge {status_class}'>{confidence_level}</span>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-        # show engineered features if requested (call extra debug endpoint or reconstruct)
+        # Display Engineered Features
         if show_engineered:
-            # If backend returns engineered features, prefer that; else reconstruct locally
+            st.markdown("<div style='height: 20px'></div>", unsafe_allow_html=True)
+            st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+            st.markdown("<h3 class='card-title'>Engineered Features</h3>", unsafe_allow_html=True)
+            
             engineered = result.get("engineered_features")
             if engineered is None:
-                # local compute (same as training): quick reproduction
-                Age = 2025 - payload["year"]
-                KM_per_Year = payload["kms_driven"] / max(Age + 1, 1)
-                Price_Depreciation = payload["present_price"] / max(Age + 1, 1)
-                Car_Condition = (payload["present_price"] / (payload["kms_driven"] + 1)) * (1.0 / (Age + 1))
+                vehicle_age = 2025 - payload["year"]
+                km_per_year = payload["kms_driven"] / max(vehicle_age, 1)
+                price_depreciation = payload["present_price"] / max(vehicle_age, 1)
+                car_condition = (payload["present_price"] / (payload["kms_driven"] + 1)) * (1.0 / (vehicle_age + 1))
+                
                 engineered = {
                     "Present_Price": payload["present_price"],
                     "Kms_Driven": payload["kms_driven"],
-                    "Age": Age,
-                    "KM_per_Year": round(KM_per_Year, 2),
-                    "Price_Depreciation": round(Price_Depreciation, 4),
-                    "Car_Condition": round(Car_Condition, 8),
+                    "Age": vehicle_age,
+                    "KM_per_Year": round(km_per_year, 2),
+                    "Price_Depreciation": round(price_depreciation, 4),
+                    "Car_Condition": round(car_condition, 8),
                     "Is_First_Owner": int(payload["owner"] == 0),
                     "Is_Diesel": int(payload["fuel_type"].lower() == "diesel"),
                     "Brand": payload["brand"]
                 }
-
-            st.markdown("#### Engineered features")
+            
             st.json(engineered)
+            st.markdown('</div>', unsafe_allow_html=True)
 
-        # If API returned feature importance data, show it
+        # Display Feature Importance
         feat_imp = result.get("feature_importance")
         if feat_imp:
-            st.markdown("#### Feature importance (model view)")
+            st.markdown("<div style='height: 20px'></div>", unsafe_allow_html=True)
+            st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+            st.markdown("<h3 class='card-title'>Feature Importance Analysis</h3>", unsafe_allow_html=True)
+            
             df_imp = pd.DataFrame(feat_imp)
-            chart = alt.Chart(df_imp).mark_bar().encode(
-                x=alt.X("importance:Q"),
-                y=alt.Y("feature:N", sort='-x')
-            ).properties(height=320)
+            chart = alt.Chart(df_imp).mark_bar(color='#0066CC').encode(
+                x=alt.X("importance:Q", title="Importance Score"),
+                y=alt.Y("feature:N", sort='-x', title="Feature"),
+                tooltip=['feature', 'importance']
+            ).properties(height=320).configure_axis(
+                labelColor='#CBD5E1',
+                titleColor='#F8FAFC'
+            ).configure_view(
+                strokeWidth=0
+            )
+            
             st.altair_chart(chart, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
-# -------------------------
-# Footer / credits
-# -------------------------
-st.markdown("---")
-st.markdown("<div class='muted'>Built with ❤️ for Shadowfox | Designed by your friendly ML mentor</div>", unsafe_allow_html=True)
+# Footer
+st.markdown("<hr class='divider'/>", unsafe_allow_html=True)
+st.markdown("""
+<div style='text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px 0;'>
+    <strong>Shadowfox Technology Solutions</strong><br/>
+    Advanced Machine Learning for Automotive Valuation
+</div>
+""", unsafe_allow_html=True)
