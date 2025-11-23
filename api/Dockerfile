@@ -16,8 +16,10 @@ RUN python -m pip install --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
 # Copy project files into the image
-COPY . .
-
+# Copy necessary folders
+COPY src /app/src
+COPY api /app/api
+COPY model /app/model
 # Expose the FastAPI port
 EXPOSE 8000
 
