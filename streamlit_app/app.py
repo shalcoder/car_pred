@@ -6,7 +6,7 @@ import altair as alt
 from datetime import datetime
 
 # Configuration
-API_URL = "http://127.0.0.1:8000/predict"
+API_URL = "https://car-pred-le3d.onrender.com/predict"
 APP_TITLE = "Shadowfox Car Resale Price Estimator"
 APP_SUB = "Intelligent vehicle valuation powered by machine learning"
 
