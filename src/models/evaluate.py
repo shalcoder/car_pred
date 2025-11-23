@@ -10,8 +10,8 @@ from src.features.feature_engineering import create_basic_features
 DATA_PATH = "E:\\shadowfox\\phase2\\car_pred\\data\\car.csv"
 
 # model paths
-MODEL1 = "E:\\shadowfox\\phase2\\car_pred\\model\\best_model.joblib"
-MODEL2 = "E:\\shadowfox\\phase2\\car_pred\\model\\best_tuned_model.joblib"
+MODEL1 = "model\best_model.joblib"
+MODEL2 = "model\best_tuned_model.joblib"
 
 
 def load_dataset():

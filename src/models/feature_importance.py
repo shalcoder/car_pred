@@ -5,8 +5,8 @@ import numpy as np
 import shap
 import os
 
-MODEL_PATH = r"E:\shadowfox\phase2\car_pred\model\best_tuned_model.joblib"
-DATA_PATH = r"E:\shadowfox\phase2\car_pred\data\car.csv"
+MODEL_PATH = r"model\best_tuned_model.joblib"
+DATA_PATH = r"data\car.csv"
 
 from src.features.feature_engineering import create_basic_features
 

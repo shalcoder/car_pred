@@ -14,8 +14,8 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from src.features.feature_engineering import create_basic_features
 from src.features.preprocessing import build_preprocessor
 
-DATA_PATH = "E:\\shadowfox\\phase2\\car_pred\\data\\car.csv"
-OUT_PATH = "E:\\shadowfox\\phase2\\car_pred\\model\\best_tuned_model.joblib"
+DATA_PATH = "data\car.csv"
+OUT_PATH = "model\best_tuned_model.joblib"
 RANDOM_STATE = 42
 TEST_SIZE = 0.2
 
