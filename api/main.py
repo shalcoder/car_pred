@@ -12,8 +12,8 @@ LOG = logging.getLogger("uvicorn")
 app = FastAPI(title="Shadowfox - Car Price Prediction API")
 
 # Priority loading
-MODEL_PATH1 = r"model\best_model.joblib"
-TUNED_MODEL_PATH  = r"model\best_tuned_model.joblib"
+MODEL_PATH1 = r"model/best_model.joblib"
+TUNED_MODEL_PATH  = r"model/best_tuned_model.joblib"
 
 MODEL = None
 MODEL_PATH = None
