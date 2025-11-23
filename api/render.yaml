@@ -1,0 +1,16 @@
+services:
+  - name: shadowfox-api
+    type: web
+    runtime: docker
+    region: oregon
+    plan: free
+
+    dockerfilePath: ./api/Dockerfile
+
+    envVars:
+      - key: MODEL_PATH
+        value: model/best_tuned_model.joblib
+      - key: CURRENT_YEAR
+        value: "2025"
+
+    healthCheckPath: /health
